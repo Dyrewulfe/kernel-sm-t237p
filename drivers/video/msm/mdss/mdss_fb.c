@@ -46,6 +46,10 @@
 #include <linux/kthread.h>
 #include <linux/of_address.h>
 
+#ifdef CONFIG_LLCON
+#include <video/llcon.h>
+#endif
+
 #include <mach/board.h>
 #include <mach/memory.h>
 #include <mach/iommu.h>
@@ -2262,6 +2266,16 @@ static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 		pr_debug("Shutdown signalled\n");
 		return -EPERM;
 	}
+	
+#ifdef CONFIG_LLCON
+	if ( cmd != MSMFB_NOTIFY_UPDATE 
+	  && cmd != MSMFB_OVERLAY_VSYNC_CTRL
+	  && cmd != MSMFB_METADATA_GET
+	  && cmd != MSMFB_DISPLAY_COMMIT ) {
+		llcon_exit();
+	}
+#endif
+
 
 	return 0;
 }

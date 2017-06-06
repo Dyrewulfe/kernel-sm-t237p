@@ -77,6 +77,11 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
+#ifdef CONFIG_LLCON
+#include <video/llcon.h>
+#endif
+
+
 #ifdef CONFIG_X86_LOCAL_APIC
 #include <asm/smp.h>
 #endif
@@ -925,6 +930,9 @@ static void __init do_initcalls(void)
  */
 static void __init do_basic_setup(void)
 {
+#ifdef CONFIG_LLCON
+	llcon_init();
+#endif
 	cpuset_init_smp();
 	usermodehelper_init();
 	shmem_init();
