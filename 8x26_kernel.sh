@@ -6,8 +6,8 @@ BUILD_TOP_DIR=..
 BUILD_KERNEL_DIR=$(pwd)
 
 SECURE_SCRIPT=$BUILD_TOP_DIR/../../Cinnamon_MSM8x26/buildscript/tools/signclient.jar
-BUILD_CROSS_COMPILE=../../prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
-BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
+BUILD_CROSS_COMPILE=/opt/toolchains/arm-eabi-4.9/bin/arm-eabi-
+BUILD_JOB_NUMBER=2
 
 # Default Python version is 2.7
 mkdir -p bin
@@ -15,9 +15,9 @@ ln -sf /usr/bin/python2.7 ./bin/python
 export PATH=$(pwd)/bin:$PATH
 
 KERNEL_DEFCONFIG=msm8226-sec_defconfig
-DEBUG_DEFCONFIG=msm8226_sec_eng_defconfig
+DEBUG_DEFCONFIG=
 SELINUX_DEFCONFIG=selinux_defconfig
-SELINUX_LOG_DEFCONFIG=selinux_log_defconfig
+SELINUX_LOG_DEFCONFIG=
 
 #sed -i.bak "s/CONFIG_MODVERSIONS=y/CONFIG_MODVERSIONS=n/g" ${BUILD_KERNEL_DIR}/arch/arm/configs/${KERNEL_DEFCONFIG}
 
@@ -94,6 +94,8 @@ else
 	DTS_NAMES=
 fi
 
+DTS_NAMES=msm8926-sec-degasltespr-r
+
 PROJECT_NAME=${VARIANT}
 if [ "$MODEL" == "ms01lte" ]; then
 	VARIANT_DEFCONFIG=msm8926-sec_${MODEL}_${CARRIER}_defconfig
@@ -118,12 +120,12 @@ case $1 in
 		*)
 		BUILD_KERNEL_OUT_DIR=$BUILD_TOP_DIR/okernel/$BUILD_COMMAND
 		PRODUCT_OUT=$BUILD_TOP_DIR/okernel/$BUILD_COMMAND
-		RAMDISK_OUT=$BUILD_TOP_DIR/ramd
+		RAMDISK_OUT=$BUILD_TOP_DIR/ramdisk
 		BOARD_KERNEL_BASE=0x00000000
 		BOARD_KERNEL_PAGESIZE=2048
 		BOARD_KERNEL_TAGS_OFFSET=0x01E00000
 		BOARD_RAMDISK_OFFSET=0x02000000
-		BOARD_KERNEL_CMDLINE="console=ttyHSL0,115200,n8 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 androidboot.selinux=disabled"
+		BOARD_KERNEL_CMDLINE="console=tty0,115200 androidboot.llcon=2,100,0,0x03200000,24,1280,800,800,8,0xFFFFFF androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 androidboot.selinux=permissive"
 		#BOARD_KERNEL_CMDLINE="console=ttyHSL0,115200,n8 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3"
 		mkdir -p $BUILD_KERNEL_OUT_DIR
 		mkdir -p $RAMDISK_OUT
@@ -164,7 +166,7 @@ FUNC_APPEND_DTB()
 }
 
 INSTALLED_DTIMAGE_TARGET=${BUILD_KERNEL_OUT_DIR}/dt.img
-DTBTOOL=$BUILD_TOP_DIR/kernel/tools/dtbTool
+DTBTOOL=$BUILD_TOP_DIR/dtbtool
 
 FUNC_BUILD_DTIMAGE_TARGET()
 {
@@ -245,7 +247,7 @@ FUNC_MKBOOTIMG()
 	echo "START : FUNC_MKBOOTIMG"
 	echo "==================================="
 	echo ""
-	MKBOOTIMGTOOL=$BUILD_TOP_DIR/kernel/tools/mkbootimg
+	MKBOOTIMGTOOL=$BUILD_TOP_DIR/mkbootimg
 
 	if ! [ -e $MKBOOTIMGTOOL ] ; then
 		if ! [ -d $BUILD_TOP_DIR/out/host/linux-x86/bin ] ; then
@@ -289,7 +291,7 @@ else
 			--dt $INSTALLED_DTIMAGE_TARGET" 
 
 	$MKBOOTIMGTOOL --kernel $KERNEL_ZIMG \
-			--ramdisk $RAMDISK_OUT/${MODEL}_${CARRIER}_ramdisk.img \
+			--ramdisk $RAMDISK_OUT/initrd.img \
 			--output $PRODUCT_OUT/boot.img \
 			--cmdline "$BOARD_KERNEL_CMDLINE" \
 			--base $BOARD_KERNEL_BASE \
